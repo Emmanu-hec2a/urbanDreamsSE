@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Urban Foods Café{% endblock %}
+
+{% block content %}
+<h1>Dashboard</h1>
+
+<div class="dashboard-grid">
+    <div class="stat-card">
+        <h3>Today's Sales</h3>
+        <div class="stat-value">KES {{ today_sales.total|default:0 }}</div>
+        <p>{{ today_sales.count|default:0 }} transactions</p>
+    </div>
+
+    <div class="stat-card">
+        <h3>Weekly Sales</h3>
+        <div class="stat-value">KES {{ weekly_sales.total|default:0 }}</div>
+        <p>{{ weekly_sales.count|default:0 }} transactions</p>
+    </div>
+
+    <div class="stat-card">
+        <h3>Top Selling Items</h3>
+        <ul style="list-style: none; padding: 0;">
+            {% for item in top_items %}
+                <li>{{ item.menu_item__name }}: {{ item.total_quantity }}</li>
+            {% empty %}
+                <li>No sales data available</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="stat-card">
+        <h3>Payment Methods</h3>
+        <ul style="list-style: none; padding: 0;">
+            {% for method in payment_methods %}
+                <li>{{ method.payment_method }}: {{ method.count }}</li>
+            {% empty %}
+                <li>No payment data available</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+
+<div class="card">
+    <h3>Sales Chart</h3>
+    <canvas id="sales-chart" width="400" height="200"></canvas>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize dashboard charts with real data
+    const chartCanvas = document.getElementById('sales-chart');
+    if (chartCanvas) {
+        const ctx = chartCanvas.getContext('2d');
+        const chartLabels = JSON.parse('{{ chart_labels|safe }}');
+        const chartData = JSON.parse('{{ chart_data|safe }}');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: chartLabels,
+                datasets: [{
+                    label: 'Daily Sales (KES)',
+                    data: chartData,
+                    borderColor: 'rgb(75, 192, 192)',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

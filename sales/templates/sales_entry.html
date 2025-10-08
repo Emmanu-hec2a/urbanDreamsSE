@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Sales Entry - Urban Foods Café{% endblock %}
+
+{% block content %}
+<h1>Sales Entry</h1>
+
+<form id="sales-form" method="post" novalidate>
+    {% csrf_token %}
+    {{ sale_form.as_p }}
+    <input type="hidden" name="cart_data" id="cart_data" />
+
+    <h2>Menu Items</h2>
+    <input type="text" id="menu-search" placeholder="Search menu items..." style="margin-bottom: 1rem; padding: 0.5rem; width: 100%; max-width: 400px;" />
+
+    <div class="menu-grid">
+        {% for item in menu_items %}
+        <div class="menu-item" data-id="{{ item.id }}" data-name="{{ item.name }}" data-price="{{ item.unit_price }}">
+            <h3>{{ item.name }}</h3>
+            <p>{{ item.category }}</p>
+            <p>KES {{ item.unit_price }}</p>
+        </div>
+        {% empty %}
+        <p>No menu items available.</p>
+        {% endfor %}
+    </div>
+
+    <h2>Cart</h2>
+    <div class="cart" id="cart-items">
+        <p>No items in cart</p>
+    </div>
+    <div class="cart-total" id="cart-total">Total: KES 0.00</div>
+
+    <button type="submit">Save Sale</button>
+</form>
+<!-- <script src="{% static 'sales/js/sales_entry.js' %}"></script> -->
+{% endblock %}

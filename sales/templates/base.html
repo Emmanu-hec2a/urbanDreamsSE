@@ -1,0 +1,48 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}Urban Foods Café{% endblock %}</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{% static 'sales/images/favicon.png' %}">
+    <link rel="apple-touch-icon" href="{% static 'sales/images/favicon.png' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'sales/css/styles.css' %}" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <header style="position: sticky; top: 0; background-color: #fff; z-index: 1000; box-shadow: 0 2px 4px rgba(0,0,0,0.1);  padding: 1rem 2rem;">
+        <nav>
+            <ul>
+                <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                <li><a href="{% url 'sales_entry' %}">Sales Entry</a></li>
+                {% if user.is_staff %}
+                <li><a href="{% url 'menu_list' %}">Menu Management</a></li>
+                <li><a href="{% url 'sales_history' %}">Sales History</a></li>
+                <li><a href="{% url 'reports' %}">Reports</a></li>
+                {% endif %}
+                <li><button id="theme-toggle" class="btn">Toggle Theme</button></li>
+                <li><a href="{% url 'logout' %}">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                    <li class="{{ message.tags }}">{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        {% block content %}{% endblock %}
+    </main>
+    <footer>
+        <p>&copy; 2025 Urban Foods Café</p>
+    </footer>
+    <script src="{% static 'sales/js/main.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

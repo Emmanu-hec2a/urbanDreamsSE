@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}Menu Management - Urban Foods Café{% endblock %}
+
+{% block content %}
+<h1>Menu Management</h1>
+
+<a href="{% url 'menu_add' %}" class="btn">Add New Menu Item</a>
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Category</th>
+            <th>Price</th>
+            <th>Available</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in menu_items %}
+        <tr>
+            <td>{{ item.name }}</td>
+            <td>{{ item.category }}</td>
+            <td>KES {{ item.unit_price }}</td>
+            <td>{% if item.is_available %}Yes{% else %}No{% endif %}</td>
+            <td>
+                <a href="{% url 'menu_edit' item.pk %}" class="btn btn-secondary">Edit</a>
+                <a href="{% url 'menu_delete' item.pk %}" class="btn btn-danger">Delete</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="5">No menu items found.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
