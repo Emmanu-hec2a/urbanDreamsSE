@@ -25,10 +25,11 @@ SECRET_KEY = 'django-insecure-6nq&c48d*=^h60i_!(8ca_!26&4(*l4)9q#nk80pvw94+b!%($
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.42.214', 'localhost', '127.0.0.1', '*']
+ALLOWED_HOSTS = ['192.168.42.214', 'https://urbandreamsse.up.railway.app', 'localhost', '127.0.0.1', '*']
 
 CSRF_TRUSTED_ORIGINS = [
     'http://127.0.0.1:3000',
+    'https://urbandreamsse.up.railway.app',
     'http://localhost',
     'http://192.168.42.214:3000',
 ]
