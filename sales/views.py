@@ -38,9 +38,12 @@ def register_view(request):
             user = form.save()
             login(request, user)
             return redirect('dashboard')
+        else:
+            print("Form errors:", form.errors) 
     else:
         form = UserRegistrationForm()
     return render(request, 'register.html', {'form': form})
+
 
 # Dashboard View
 @login_required

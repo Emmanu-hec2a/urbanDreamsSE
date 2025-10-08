@@ -17,11 +17,17 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
+from django.views.generic import RedirectView
+from django.templatetags.static import static as static_url
 from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('sales.urls')),
+
+    #Favicon
+    path('favicon.ico', RedirectView.as_view(url=static_url('/static/sales/images/favicon.png'))),
+
 ]
 
 if settings.DEBUG:
