@@ -10,7 +10,7 @@ from datetime import timedelta
 from .models import MenuItem, Sale, SaleItem
 from .forms import MenuItemForm, SaleForm, SaleItemForm, UserRegistrationForm
 from django.contrib.auth.forms import AuthenticationForm
-from django.contrib.auth import login, logout
+from django.contrib.auth import login, logout, authenticate
 from django.http import JsonResponse, HttpResponse
 import json
 import csv
@@ -36,10 +36,22 @@ def register_view(request):
         form = UserRegistrationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            login(request, user)
-            return redirect('dashboard')
+
+            # Get credentials from the cleaned form data
+            username = form.cleaned_data.get('username')
+            raw_password = form.cleaned_data.get('password1')
+
+            # Explicitly authenticate the user
+            user = authenticate(username=username, password=raw_password)
+
+            if user is not None:
+                login(request, user)
+                return redirect('dashboard')
+            else:
+                print("Authentication failed after registration.")
+                return redirect('login')
         else:
-            print("Form errors:", form.errors) 
+            print("Form errors:", form.errors)
     else:
         form = UserRegistrationForm()
     return render(request, 'register.html', {'form': form})
