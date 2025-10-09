@@ -1,4 +1,20 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // Mobile menu toggle
+    const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+    const navMenu = document.getElementById('nav-menu');
+
+    mobileMenuToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        navMenu.classList.toggle('nav-open');
+    });
+
+    // Close nav menu if clicking outside
+    document.addEventListener('click', (e) => {
+        if (navMenu.classList.contains('nav-open') && !navMenu.contains(e.target) && e.target !== mobileMenuToggle) {
+            navMenu.classList.remove('nav-open');
+        }
+    });
+
     // Theme toggle
     const themeToggleBtn = document.getElementById('theme-toggle');
     const currentTheme = localStorage.getItem('theme') || 'light';

@@ -19,8 +19,9 @@
 </head>
 <body>
     <header style="position: sticky; top: 0; background-color: #fff; z-index: 1000; box-shadow: 0 2px 4px rgba(0,0,0,0.1);  padding: 1rem 2rem;">
-        <nav>
-            <ul>
+        <button id="mobile-menu-toggle" class="hamburger" aria-label="Toggle menu">☰</button>
+        <nav class="nav-section" style="display: flex; justify-content: space-between;">
+            <ul id="nav-menu">
                 <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
                 <li><a href="{% url 'sales_entry' %}">Sales Entry</a></li>
                 {% if user.is_staff %}
