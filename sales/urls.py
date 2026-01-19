@@ -9,6 +9,10 @@ urlpatterns = [
 
     # Dashboard
     path('', views.dashboard, name='dashboard'),
+    path('api/dashboard/daily-sales/', views.dashboard_chart_api, name='dashboard_chart_api'),
+    path('api/dashboard/payment-methods/', views.payment_methods_api, name='payment_methods_api'),
+    path('api/dashboard/weekly-sales/', views.weekly_sales_api, name='weekly_sales_api'),
+
 
     # Sales Entry
     path('sales/entry/', views.sales_entry, name='sales_entry'),

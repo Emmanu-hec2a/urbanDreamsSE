@@ -96,6 +96,16 @@ def dashboard(request):
         chart_labels.append(date.strftime('%a'))
         chart_data.append(float(sales_sum))
 
+    # Weekly sales trend data (last 4 weeks)
+    weekly_chart_data = []
+    weekly_chart_labels = []
+    for i in range(3, -1, -1):
+        week_start = today - timedelta(days=today.weekday() + 7 * i)
+        week_end = week_start + timedelta(days=6)
+        weekly_sum = Sale.objects.filter(sale_date__date__gte=week_start, sale_date__date__lte=week_end).aggregate(total=Sum('total_amount'))['total'] or 0
+        weekly_chart_labels.append(f'Week {4-i}')
+        weekly_chart_data.append(float(weekly_sum))
+
     context = {
         'today_sales': today_sales,
         'weekly_sales': weekly_sales,
@@ -103,6 +113,8 @@ def dashboard(request):
         'payment_methods': payment_methods,
         'chart_labels': json.dumps(chart_labels),
         'chart_data': json.dumps(chart_data),
+        'weekly_chart_labels': json.dumps(weekly_chart_labels),
+        'weekly_chart_data': json.dumps(weekly_chart_data),
     }
     return render(request, 'dashboard.html', context)
 
@@ -237,6 +249,49 @@ class SaleDeleteView(LoginRequiredMixin, DeleteView):
     def delete(self, request, *args, **kwargs):
         messages.success(self.request, 'Sale deleted successfully!')
         return super().delete(request, *args, **kwargs)
+    
+#Sales dashboard charts
+def dashboard_chart_api(request):
+    days = 7
+    start_date = timezone.now() - timedelta(days=days)
+
+    daily_sales = (
+        Sale.objects
+        .filter(created_at__gte=start_date)
+        .extra(select={'day': "date(created_at)"})
+        .values('day')
+        .annotate(total=Sum('total_amount'))
+        .order_by('day')
+    )
+
+    return JsonResponse({
+        "labels": [d['day'] for d in daily_sales],
+        "data": [float(d['total']) for d in daily_sales],
+        
+    })
+
+def weekly_sales_api(request):
+    weekly = (
+        Sale.objects
+        .extra(select={'week': "strftime('Week %W', created_at)"})
+        .values('week')
+        .annotate(total=Sum('total_amount'))
+        .order_by('week')
+    )
+
+    return JsonResponse({
+        "labels": [w['week'] for w in weekly],
+        "data": [float(w['total']) for w in weekly],
+    })
+
+def payment_methods_api(request):
+    payments = (
+        Sale.objects
+        .values('payment_method')
+        .annotate(count=Count('id'))
+    )
+    return JsonResponse(list(payments), safe=False)
+
 
 # Reports View
 @login_required

@@ -18,9 +18,13 @@
     {% block extra_head %}{% endblock %}
 </head>
 <body>
-    <header style="position: sticky; top: 0; background-color: #fff; z-index: 1000; box-shadow: 0 2px 4px rgba(0,0,0,0.1);  padding: 1rem 2rem;">
-        <button id="mobile-menu-toggle" class="hamburger" aria-label="Toggle menu">☰</button>
-        <nav class="nav-section" style="display: flex; justify-content: space-between;">
+    <header style="position: sticky; top: 0; background-color: #fff; z-index: 1000; box-shadow: 0 2px 4px rgba(0,0,0,0.1); padding: 1rem 2rem;">
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+            <h1 class="logo-text">Urban Dreams Café</h1>
+            <button id="mobile-menu-toggle" class="hamburger" aria-label="Toggle menu">☰</button>
+        </div>
+        <!-- <button id="mobile-menu-toggle" class="hamburger" aria-label="Toggle menu">☰</button> -->
+        <nav class="nav-section">
             <ul id="nav-menu">
                 <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
                 <li><a href="{% url 'sales_entry' %}">Sales Entry</a></li>

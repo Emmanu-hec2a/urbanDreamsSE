@@ -41,42 +41,152 @@
     </div>
 </div>
 
-<div class="card" style="display:none;">
-    <h3>Sales Chart</h3>
-    <canvas id="sales-chart" width="400" height="200"></canvas>
+<div class="card">
+    <h3>Daily Sales Trend</h3>
+    <canvas id="sales-chart" width="200" height="100"></canvas>
+</div>
+
+<div class="card">
+    <h3>Payment Methods Distribution</h3>
+    <div class="pie-wrapper">
+        <canvas id="payment-chart"></canvas>
+    </div>
+</div>
+
+<div class="card">
+    <h3>Weekly Sales Trend</h3>
+    <canvas id="weekly-chart" width="200" height="100"></canvas>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize dashboard charts with real data
-    const chartCanvas = document.getElementById('sales-chart');
-    if (chartCanvas) {
-        const ctx = chartCanvas.getContext('2d');
-        const chartLabels = JSON.parse('{{ chart_labels|safe }}');
-        const chartData = JSON.parse('{{ chart_data|safe }}');
-        new Chart(ctx, {
+let dailyChart = null;
+let weeklyChart = null;
+let paymentChart = null;
+
+// WebSocket for real-time updates
+let socket = null;
+
+document.addEventListener('DOMContentLoaded', () => {
+
+    /* =========================
+       DAILY SALES CHART
+    ========================== */
+    const dailyCanvas = document.getElementById('sales-chart');
+    if (dailyCanvas) {
+        dailyChart = new Chart(dailyCanvas.getContext('2d'), {
             type: 'line',
-            data: {
-                labels: chartLabels,
-                datasets: [{
-                    label: 'Daily Sales (KES)',
-                    data: chartData,
-                    borderColor: 'rgb(75, 192, 192)',
-                    tension: 0.1
-                }]
-            },
+            data: { labels: [], datasets: [{ label: 'Daily Sales (KES)', data: [], borderColor: 'rgb(75, 192, 192)', tension: 0.1 }] },
             options: {
                 responsive: true,
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                }
+                animation: { duration: 800, easing: 'easeOutQuart' },
+                scales: { y: { min: 0, max: 10000, ticks: { callback: v => 'KES ' + v } } }
             }
         });
+
+        refreshDailyChart();
+        setInterval(refreshDailyChart, 10000);
     }
+
+    /* =========================
+       WEEKLY SALES CHART
+    ========================== */
+    const weeklyCanvas = document.getElementById('weekly-chart');
+    if (weeklyCanvas) {
+        weeklyChart = new Chart(weeklyCanvas.getContext('2d'), {
+            type: 'line',
+            data: { labels: [], datasets: [{ label: 'Weekly Sales (KES)', data: [], borderColor: 'rgb(153, 102, 255)', tension: 0.1 }] },
+            options: {
+                responsive: true,
+                animation: { duration: 800, easing: 'easeOutQuart' },
+                scales: { y: { beginAtZero: true, ticks: { callback: v => 'KES ' + v } } }
+            }
+        });
+
+        refreshWeeklyChart();
+        setInterval(refreshWeeklyChart, 15000);
+    }
+
+    /* =========================
+       PAYMENT METHODS PIE
+    ========================== */
+    const paymentCanvas = document.getElementById('payment-chart');
+    if (paymentCanvas) {
+        paymentChart = new Chart(paymentCanvas.getContext('2d'), {
+            type: 'pie',
+            data: { labels: [], datasets: [{ data: [], backgroundColor: [], borderWidth: 1 }] },
+            options: { responsive: true, maintainAspectRatio: false, animation: { duration: 800 }, plugins: { legend: { position: 'bottom' } } }
+        });
+
+        refreshPaymentChart();
+        setInterval(refreshPaymentChart, 15000);
+    }
+
+    /* =========================
+       WEBSOCKET FOR REAL-TIME UPDATES
+    ========================== */
+    if (window.location.protocol === "https:") {
+        socket = new WebSocket("wss://" + window.location.host + "/ws/dashboard/");
+    } else {
+        socket = new WebSocket("ws://" + window.location.host + "/ws/dashboard/");
+    }
+
+    socket.onmessage = function (event) {
+        const data = JSON.parse(event.data);
+        if (data.refresh) {
+            refreshDailyChart();
+            refreshWeeklyChart();
+            refreshPaymentChart();
+        }
+    };
+
 });
+
+/* =========================
+   REFRESH FUNCTIONS
+========================== */
+
+function refreshDailyChart() {
+    fetch('/api/dashboard/daily-sales/')
+        .then(res => res.json())
+        .then(data => {
+            if (!dailyChart) return;
+            dailyChart.data.labels = data.labels;
+            dailyChart.data.datasets[0].data = data.data;
+            dailyChart.update();
+        });
+}
+
+function refreshWeeklyChart() {
+    fetch('/api/dashboard/weekly-sales/')
+        .then(res => res.json())
+        .then(data => {
+            if (!weeklyChart) return;
+
+            // auto-scale weekly chart, min 0, default 50k
+            const maxValue = Math.max(...data.data, 50000);
+            weeklyChart.options.scales.y.max = Math.ceil(maxValue / 5000) * 5000;
+
+            weeklyChart.data.labels = data.labels;
+            weeklyChart.data.datasets[0].data = data.data;
+            weeklyChart.update();
+        });
+}
+
+function refreshPaymentChart() {
+    fetch('/api/dashboard/payment-methods/')
+        .then(res => res.json())
+        .then(data => {
+            if (!paymentChart) return;
+
+            paymentChart.data.labels = data.map(d => d.payment_method);
+            paymentChart.data.datasets[0].data = data.map(d => d.count);
+            paymentChart.data.datasets[0].backgroundColor =
+                data.map(d => d.payment_method === 'Cash' ? 'orange' : 'green');
+
+            paymentChart.update();
+        });
+}
 </script>
 {% endblock %}
