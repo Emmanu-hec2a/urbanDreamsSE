@@ -270,18 +270,26 @@ def dashboard_chart_api(request):
         
     })
 
+from django.db.models.functions import TruncWeek
+
 def weekly_sales_api(request):
+    from datetime import datetime, timedelta
+    
+    # Get sales from last 8-12 weeks for better visualization
+    weeks_ago = datetime.now() - timedelta(weeks=12)
+    
     weekly = (
         Sale.objects
-        .extra(select={'week': "strftime('Week %W', created_at)"})
+        .filter(created_at__gte=weeks_ago)
+        .annotate(week=TruncWeek('created_at'))
         .values('week')
         .annotate(total=Sum('total_amount'))
         .order_by('week')
     )
 
     return JsonResponse({
-        "labels": [w['week'] for w in weekly],
-        "data": [float(w['total']) for w in weekly],
+        "labels": [w['week'].strftime('Week %W') if w['week'] else 'N/A' for w in weekly],
+        "data": [float(w['total']) if w['total'] else 0 for w in weekly],
     })
 
 def payment_methods_api(request):
